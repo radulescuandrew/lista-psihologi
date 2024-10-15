@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { Psychologist } from './types';
 import Card from './components/Card';
 import SearchBar from './components/SearchBar';
 import FilterDropdown from './components/FilterDropdown';
 import CheckboxFilter from './components/CheckboxFilter';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 function App() {
   const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
@@ -15,14 +16,17 @@ function App() {
   const [tsa, setTsa] = useState(false);
   const [expert, setExpert] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const LIMIT = 15;
 
   useEffect(() => {
     fetchSpecialties();
-    fetchPsychologists();
+    fetchPsychologists(true);
   }, []);
 
   useEffect(() => {
-    fetchPsychologists();
+    fetchPsychologists(true);
   }, [searchTerm, selectedSpecialty, dgpc, tsa, expert]);
 
   const fetchSpecialties = async () => {
@@ -36,9 +40,13 @@ function App() {
     }
   };
 
-  const fetchPsychologists = async () => {
+  const fetchPsychologists = useCallback(async (reset: boolean = false) => {
     try {
-      const params: Record<string, any> = {};
+      const newOffset = reset ? 0 : offset;
+      const params: Record<string, unknown> = {
+        _offset: newOffset,
+        _limit: LIMIT
+      };
 
       if (searchTerm.trim()) {
         params._nume = searchTerm.trim();
@@ -54,11 +62,23 @@ function App() {
 
       const { data, error } = await supabase.rpc('search_psihologi', params);
       if (error) throw error;
-      setPsychologists(data);
+      
+      if (reset) {
+        setPsychologists(data);
+      } else {
+        setPsychologists(prev => [...prev, ...data]);
+      }
+      
+      setHasMore(data.length === LIMIT);
+      setOffset(newOffset + data.length);
     } catch (error) {
       console.error('Error fetching psychologists:', error);
       setError('Failed to fetch psychologists. Please check your Supabase configuration.');
     }
+  }, [searchTerm, selectedSpecialty, dgpc, tsa, expert, offset]);
+
+  const loadMore = () => {
+    fetchPsychologists();
   };
 
   if (error) {
@@ -87,11 +107,23 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {psychologists.map((psy) => (
-            <Card key={psy.id} psychologist={psy} />
-          ))}
-        </div>
+        <InfiniteScroll
+          dataLength={psychologists.length}
+          next={loadMore}
+          hasMore={hasMore}
+          loader={<h4>Loading...</h4>}
+          endMessage={
+            <p style={{ textAlign: 'center' }}>
+              <b>No more psychologists to load</b>
+            </p>
+          }
+        >
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {psychologists.map((psy) => (
+              <Card key={psy.id} psychologist={psy} />
+            ))}
+          </div>
+        </InfiniteScroll>
       </div>
     </div>
   );
