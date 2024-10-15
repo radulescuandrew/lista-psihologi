@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import { Psychologist } from './types';
 import Card from './components/Card';
@@ -20,9 +20,11 @@ function App() {
   const [offset, setOffset] = useState(0);
   const LIMIT = 15;
 
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     fetchSpecialties();
-    fetchPsychologists(true);
+    // fetchPsychologists(true);
   }, []);
 
   useEffect(() => {
@@ -77,9 +79,15 @@ function App() {
     }
   }, [searchTerm, selectedSpecialty, dgpc, tsa, expert, offset]);
 
-  const loadMore = () => {
-    fetchPsychologists();
-  };
+  const loadMore = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      fetchPsychologists();
+    }, 700);
+  }, [fetchPsychologists]);
 
   if (error) {
     return <div className="text-center text-red-500 mt-8">{error}</div>;
