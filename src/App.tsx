@@ -11,7 +11,7 @@ function App() {
   const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [dgpc, setDgpc] = useState(false);
   const [tsa, setTsa] = useState(false);
   const [expert, setExpert] = useState(false);
@@ -29,7 +29,7 @@ function App() {
 
   useEffect(() => {
     fetchPsychologists(true);
-  }, [searchTerm, selectedSpecialty, dgpc, tsa, expert]);
+  }, [searchTerm, selectedSpecialties, dgpc, tsa, expert]);
 
   const fetchSpecialties = async () => {
     try {
@@ -54,8 +54,8 @@ function App() {
         params._nume = searchTerm.trim();
       }
 
-      if (selectedSpecialty) {
-        params._specialitate = selectedSpecialty;
+      if (selectedSpecialties.length > 0) {
+        params._specialitate = selectedSpecialties;
       }
 
       if (dgpc) params._dgpc = true;
@@ -77,7 +77,7 @@ function App() {
       console.error('Error fetching psychologists:', error);
       setError('Failed to fetch psychologists. Please check your Supabase configuration.');
     }
-  }, [searchTerm, selectedSpecialty, dgpc, tsa, expert, offset]);
+  }, [searchTerm, selectedSpecialties, dgpc, tsa, expert, offset]);
 
   const loadMore = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -88,6 +88,18 @@ function App() {
       fetchPsychologists();
     }, 700);
   }, [fetchPsychologists]);
+
+  const handleSpecialtyChange = (specialty: string) => {
+    setSelectedSpecialties(prev =>
+      prev.includes(specialty)
+        ? prev.filter(s => s !== specialty)
+        : [...prev, specialty]
+    );
+  };
+
+  const removeSpecialty = (specialty: string) => {
+    setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
+  };
 
   if (error) {
     return <div className="text-center text-red-500 mt-8">{error}</div>;
@@ -103,9 +115,9 @@ function App() {
             <div className="w-1/3">
               <FilterDropdown
                 options={specialties}
-                selectedOption={selectedSpecialty}
-                onOptionChange={setSelectedSpecialty}
-                placeholder="All Specialties"
+                selectedOption=""
+                onOptionChange={handleSpecialtyChange}
+                placeholder="Select Specialties"
               />
             </div>
             <div className="flex space-x-4">
@@ -113,6 +125,16 @@ function App() {
               <CheckboxFilter label="TSA" checked={tsa} onChange={setTsa} />
               <CheckboxFilter label="Expert" checked={expert} onChange={setExpert} />
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedSpecialties.map((specialty) => (
+              <div key={specialty} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center">
+                {specialty}
+                <button onClick={() => removeSpecialty(specialty)} className="ml-2 text-blue-600 hover:text-blue-800">
+                  &times;
+                </button>
+              </div>
+            ))}
           </div>
         </div>
         <InfiniteScroll
