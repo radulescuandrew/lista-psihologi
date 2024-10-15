@@ -89,13 +89,6 @@ function App() {
     }, 700);
   }, [fetchPsychologists]);
 
-  const handleSpecialtyChange = (specialty: string) => {
-    setSelectedSpecialties(prev =>
-      prev.includes(specialty)
-        ? prev.filter(s => s !== specialty)
-        : [...prev, specialty]
-    );
-  };
 
   const removeSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
@@ -112,13 +105,15 @@ function App() {
         <div className="mb-6 space-y-4">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           <div className="flex space-x-4">
-            <div className="w-1/3">
+            <div>
+            {specialties.length > 0 && (
               <FilterDropdown
                 options={specialties}
-                selectedOption=""
-                onOptionChange={handleSpecialtyChange}
-                placeholder="Select Specialties"
+                selectedOptions={selectedSpecialties}
+                onOptionsChange={setSelectedSpecialties}
+                placeholder="Alege specialitatea"
               />
+            )}
             </div>
             <div className="flex space-x-4">
               <CheckboxFilter label="DGPC" checked={dgpc} onChange={setDgpc} />
