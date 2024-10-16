@@ -33,27 +33,30 @@ export interface PsychologistModel {
 function App() {
     const [psychologists, setPsychologists] = useState<PsychologistModel[]>([]);
     const [specialties, setSpecialties] = useState<string[]>([]);
+    const [filiale, setFiliale] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>(
         []
     );
+    const [selectedFiliale, setSelectedFiliale] = useState<string[]>([]);
     const [dgpc, setDgpc] = useState(false);
     const [tsa, setTsa] = useState(false);
     const [expert, setExpert] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [offset, setOffset] = useState(0);
-    const LIMIT = 15;
+    const LIMIT = 30;
 
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         fetchSpecialties();
+        fetchFiliale();
     }, []);
 
     useEffect(() => {
         fetchPsychologists(true);
-    }, [searchTerm, selectedSpecialties, dgpc, tsa, expert]);
+    }, [searchTerm, selectedSpecialties, selectedFiliale, dgpc, tsa, expert]);
 
     const fetchSpecialties = async () => {
         try {
@@ -68,6 +71,19 @@ function App() {
             console.error("Error fetching specialties:", error);
             setError(
                 "Failed to fetch specialties. Please check your Supabase configuration."
+            );
+        }
+    };
+
+    const fetchFiliale = async () => {
+        try {
+            const { data, error } = await supabase.rpc("get_unique_filiala");
+            if (error) throw error;
+            setFiliale(data.map((item: { filiala: string }) => item.filiala));
+        } catch (error) {
+            console.error("Error fetching filiale:", error);
+            setError(
+                "Failed to fetch filiale. Please check your Supabase configuration."
             );
         }
     };
@@ -87,6 +103,10 @@ function App() {
 
                 if (selectedSpecialties.length > 0) {
                     params._specialitate = selectedSpecialties;
+                }
+
+                if (selectedFiliale.length > 0) {
+                    params._filiala = selectedFiliale;
                 }
 
                 if (dgpc) params._dgpc = true;
@@ -162,7 +182,15 @@ function App() {
                 );
             }
         },
-        [searchTerm, selectedSpecialties, dgpc, tsa, expert, offset]
+        [
+            searchTerm,
+            selectedSpecialties,
+            selectedFiliale,
+            dgpc,
+            tsa,
+            expert,
+            offset,
+        ]
     );
 
     console.log(psychologists);
@@ -179,6 +207,10 @@ function App() {
 
     const removeSpecialty = (specialty: string) => {
         setSelectedSpecialties((prev) => prev.filter((s) => s !== specialty));
+    };
+
+    const removeFiliala = (filiala: string) => {
+        setSelectedFiliale((prev) => prev.filter((f) => f !== filiala));
     };
 
     if (error) {
@@ -202,14 +234,27 @@ function App() {
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
                     />
-                    <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 flex-wrap">
-                        <div className="relative w-full sm:w-auto">
+                    {/* <div className="flex flex-col sm:flex-row space-y-4 md:space-y-0 md:space-x-4 flex-wrap"> */}
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-4">
+                        {/* <div className="relative w-full sm:w-auto"> */}
+                        <div className="relative">
                             {specialties.length > 0 && (
                                 <FilterDropdown
                                     options={specialties}
                                     selectedOptions={selectedSpecialties}
                                     onOptionsChange={setSelectedSpecialties}
                                     placeholder="Alege specialitatea"
+                                />
+                            )}
+                        </div>
+                        {/* <div className="relative w-full sm:w-auto"> */}
+                        <div className="relative">
+                            {filiale.length > 0 && (
+                                <FilterDropdown
+                                    options={filiale}
+                                    selectedOptions={selectedFiliale}
+                                    onOptionsChange={setSelectedFiliale}
+                                    placeholder="Alege filiala"
                                 />
                             )}
                         </div>
@@ -241,6 +286,20 @@ function App() {
                                 <button
                                     onClick={() => removeSpecialty(specialty)}
                                     className="ml-2 text-blue-600 hover:text-blue-800"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        ))}
+                        {selectedFiliale.map((filiala) => (
+                            <div
+                                key={filiala}
+                                className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm flex items-center"
+                            >
+                                {filiala}
+                                <button
+                                    onClick={() => removeFiliala(filiala)}
+                                    className="ml-2 text-green-600 hover:text-green-800"
                                 >
                                     &times;
                                 </button>
