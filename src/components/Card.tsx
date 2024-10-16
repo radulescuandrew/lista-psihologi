@@ -16,11 +16,18 @@ interface CardProps {
 
 const Card2: React.FC<CardProps> = ({ psychologist }) => {
     const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase();
+        const nameParts = name.split(" ");
+        if (nameParts.length > 2) {
+            return (
+                nameParts[0][0] + nameParts[nameParts.length - 1][0]
+            ).toUpperCase();
+        } else {
+            return name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase();
+        }
     };
 
     const getFirstEmail = (email: string) => {

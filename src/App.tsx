@@ -193,8 +193,6 @@ function App() {
         ]
     );
 
-    console.log(psychologists);
-
     const loadMore = useCallback(() => {
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current);
@@ -311,7 +309,11 @@ function App() {
                     dataLength={psychologists.length}
                     next={loadMore}
                     hasMore={hasMore}
-                    loader={<h4>Loading...</h4>}
+                    loader={
+                        <div className="w-full text-center">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 my-4"></div>
+                        </div>
+                    }
                     endMessage={
                         psychologists.length > 0 ? (
                             <p style={{ textAlign: "center" }}>
