@@ -11,7 +11,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange }) => 
     <div className="relative">
       <input
         type="text"
-        placeholder="Search by name or specialty..."
+        placeholder="Introdu numele specialistului..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
         className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

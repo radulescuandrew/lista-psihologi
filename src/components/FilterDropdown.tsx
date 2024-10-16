@@ -33,10 +33,26 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const [open, setOpen] = React.useState(false)
 
   const handleSelect = (option: string) => {
-    if (selectedOptions.includes(option)) {
-      onOptionsChange(selectedOptions.filter((item) => item !== option))
+    // This line normalizes the option string:
+    // 1. Convert to lowercase
+    // 2. Normalize Unicode characters (NFD: Normalization Form Decomposition)
+    // 3. Remove diacritical marks (accents)
+    // This ensures consistent comparison regardless of case or accents
+    const normalizedOption = option.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u0102\u0103\u00C2\u00E2\u00CE\u00EE\u0218\u0219\u015E\u015F\u021A\u021B]/g, (match) => {
+      const replacements = {
+        '\u0102': 'A', '\u0103': 'a', '\u00C2': 'A', '\u00E2': 'a',
+        '\u00CE': 'I', '\u00EE': 'i', '\u0218': 'S', '\u0219': 's',
+        '\u015E': 'S', '\u015F': 's', '\u021A': 'T', '\u021B': 't'
+      };
+      return replacements[match as keyof typeof replacements] || match;
+    });
+
+    console.log("normalizedOption", normalizedOption);
+
+    if (selectedOptions.includes(normalizedOption)) {
+      onOptionsChange(selectedOptions.filter((item) => item !== normalizedOption))
     } else {
-      onOptionsChange([...selectedOptions, option])
+      onOptionsChange([...selectedOptions, normalizedOption])
     }
   }
 

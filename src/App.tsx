@@ -1,14 +1,37 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import { Psychologist } from './types';
-import Card from './components/Card';
 import SearchBar from './components/SearchBar';
 import FilterDropdown from './components/FilterDropdown';
 import CheckboxFilter from './components/CheckboxFilter';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Card from './components/Card';
+import Masonry from 'react-masonry-css';
+
+interface Specialitate {
+  specialitate: string;
+  status: string;
+  treapta_specializare: string;
+  regim_exercitare: string;
+  filiala: string;
+  data_eliberare_atestat: string;
+  comisia_de_avizare: string;
+  numar_atestat: number;
+}
+
+export interface PsychologistModel {
+  id: number;
+  nume: string;
+  cod_personal: string;
+  dgpc: boolean;
+  tsa: boolean;
+  expert: boolean;
+  email: string;
+  specialitati: Specialitate[];
+}
 
 function App() {
-  const [psychologists, setPsychologists] = useState<Psychologist[]>([]);
+  const [psychologists, setPsychologists] = useState<PsychologistModel[]>([]);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -24,7 +47,6 @@ function App() {
 
   useEffect(() => {
     fetchSpecialties();
-    // fetchPsychologists(true);
   }, []);
 
   useEffect(() => {
@@ -65,10 +87,47 @@ function App() {
       const { data, error } = await supabase.rpc('search_psihologi', params);
       if (error) throw error;
       
+      const reducedData = data.reduce((acc: PsychologistModel[], curr: Psychologist) => {
+        const existingPsy = acc.find(p => p.cod_personal === curr.cod_personal);
+        if (existingPsy) {
+          existingPsy.specialitati.push({
+            specialitate: curr.specialitate,
+            status: curr.status,
+            treapta_specializare: curr.treapta_specializare,
+            regim_exercitare: curr.regim_exercitare,
+            filiala: curr.filiala,
+            data_eliberare_atestat: curr.data_eliberare_atestat,
+            comisia_de_avizare: curr.comisia_de_avizare,
+            numar_atestat: curr.numar_atestat
+          });
+        } else {
+          acc.push({
+            id: curr.id,
+            nume: curr.nume,
+            cod_personal: curr.cod_personal,
+            dgpc: curr.dgpc,
+            tsa: curr.tsa,
+            expert: curr.expert,
+            email: curr.email,
+            specialitati: [{
+              specialitate: curr.specialitate,
+              status: curr.status,
+              treapta_specializare: curr.treapta_specializare,
+              regim_exercitare: curr.regim_exercitare,
+              filiala: curr.filiala,
+              data_eliberare_atestat: curr.data_eliberare_atestat,
+              comisia_de_avizare: curr.comisia_de_avizare,
+              numar_atestat: curr.numar_atestat
+            }]
+          });
+        }
+        return acc;
+      }, []);
+      
       if (reset) {
-        setPsychologists(data);
+        setPsychologists(reducedData);
       } else {
-        setPsychologists(prev => [...prev, ...data]);
+        setPsychologists(prev => [...prev, ...reducedData]);
       }
       
       setHasMore(data.length === LIMIT);
@@ -79,6 +138,8 @@ function App() {
     }
   }, [searchTerm, selectedSpecialties, dgpc, tsa, expert, offset]);
 
+  console.log(psychologists)
+
   const loadMore = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -86,9 +147,8 @@ function App() {
 
     debounceTimerRef.current = setTimeout(() => {
       fetchPsychologists();
-    }, 700);
+    }, 200);
   }, [fetchPsychologists]);
-
 
   const removeSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
@@ -97,6 +157,12 @@ function App() {
   if (error) {
     return <div className="text-center text-red-500 mt-8">{error}</div>;
   }
+
+  const breakpointColumnsObj = {
+    default: 2,
+    1100: 2,
+    700: 1
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -143,11 +209,17 @@ function App() {
             </p>
           }
         >
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {psychologists.map((psy) => (
-              <Card key={psy.id} psychologist={psy} />
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="flex -ml-[30px] w-auto"
+            columnClassName="pl-[30px] bg-clip-padding"
+          >
+            {psychologists.map((psy, i) => (
+              <div key={i} className="mb-6">
+                <Card psychologist={psy} />
+              </div>
             ))}
-          </div>
+          </Masonry>
         </InfiniteScroll>
       </div>
     </div>
