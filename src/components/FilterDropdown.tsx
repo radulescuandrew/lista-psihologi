@@ -77,8 +77,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         }
     };
 
-    console.log(selectedOptions);
-
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>

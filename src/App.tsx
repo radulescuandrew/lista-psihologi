@@ -7,6 +7,7 @@ import CheckboxFilter from "./components/CheckboxFilter";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Card from "./components/Card";
 import Masonry from "react-masonry-css";
+import { Badge } from "@/components/ui/badge";
 
 interface Specialitate {
     specialitate: string;
@@ -211,6 +212,26 @@ function App() {
         setSelectedFiliale((prev) => prev.filter((f) => f !== filiala));
     };
 
+    const clearAllFilters = () => {
+        setSelectedSpecialties([]);
+        setSelectedFiliale([]);
+        setDgpc(false);
+        setTsa(false);
+        setExpert(false);
+        setSearchTerm("");
+    };
+
+    const hasActiveFilters = () => {
+        return (
+            selectedSpecialties.length > 0 ||
+            selectedFiliale.length > 0 ||
+            dgpc ||
+            tsa ||
+            expert ||
+            searchTerm !== ""
+        );
+    };
+
     if (error) {
         return <div className="text-center text-red-500 mt-8">{error}</div>;
     }
@@ -232,9 +253,7 @@ function App() {
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
                     />
-                    {/* <div className="flex flex-col sm:flex-row space-y-4 md:space-y-0 md:space-x-4 flex-wrap"> */}
                     <div className="flex flex-col sm:flex-row flex-wrap gap-4">
-                        {/* <div className="relative w-full sm:w-auto"> */}
                         <div className="relative">
                             {specialties.length > 0 && (
                                 <FilterDropdown
@@ -245,7 +264,6 @@ function App() {
                                 />
                             )}
                         </div>
-                        {/* <div className="relative w-full sm:w-auto"> */}
                         <div className="relative">
                             {filiale.length > 0 && (
                                 <FilterDropdown
@@ -275,6 +293,14 @@ function App() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
+                        {hasActiveFilters() && (
+                            <Badge
+                                onClick={clearAllFilters}
+                                className="cursor-pointer hover:bg-blue-600 transition-colors duration-200"
+                            >
+                                Clear filters
+                            </Badge>
+                        )}
                         {selectedSpecialties.map((specialty) => (
                             <div
                                 key={specialty}
