@@ -66,8 +66,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         //     }
         // );
 
-        console.log("normalizedOption", normalizedOption);
-
         if (selectedOptions.includes(normalizedOption)) {
             onOptionsChange(
                 selectedOptions.filter((item) => item !== normalizedOption)
