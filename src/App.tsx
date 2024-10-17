@@ -265,9 +265,6 @@ function App() {
     return (
         <div className="min-h-screen bg-gray-100 p-3 sm:p-8">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-center">
-                    Psychologist Directory
-                </h1>
                 <div className="mb-6 space-y-4">
                     <SearchBar
                         searchTerm={searchTerm}
