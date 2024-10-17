@@ -8,6 +8,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Card from "./components/Card";
 import Masonry from "react-masonry-css";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ArrowUpIcon } from "@radix-ui/react-icons";
 
 interface Specialitate {
     specialitate: string;
@@ -46,6 +48,7 @@ function App() {
     const [error, setError] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [offset, setOffset] = useState(0);
+    const [showBackToTop, setShowBackToTop] = useState(false);
     const LIMIT = 30;
 
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -53,11 +56,28 @@ function App() {
     useEffect(() => {
         fetchSpecialties();
         fetchFiliale();
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     useEffect(() => {
         fetchPsychologists(true);
     }, [searchTerm, selectedSpecialties, selectedFiliale, dgpc, tsa, expert]);
+
+    const handleScroll = () => {
+        if (window.pageYOffset > 300) {
+            setShowBackToTop(true);
+        } else {
+            setShowBackToTop(false);
+        }
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
 
     const fetchSpecialties = async () => {
         try {
@@ -368,6 +388,14 @@ function App() {
                     </Masonry>
                 </InfiniteScroll>
             </div>
+            {showBackToTop && (
+                <Button
+                    className="fixed bottom-4 right-4 rounded-full p-2"
+                    onClick={scrollToTop}
+                >
+                    <ArrowUpIcon className="h-6 w-6" />
+                </Button>
+            )}
         </div>
     );
 }
