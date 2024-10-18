@@ -293,7 +293,7 @@ function App() {
                         </div>
                         <div className="flex flex-wrap gap-4">
                             <CheckboxFilter
-                                label="DGPC"
+                                label="Din grija pentru copii"
                                 checked={dgpc}
                                 onChange={setDgpc}
                             />
