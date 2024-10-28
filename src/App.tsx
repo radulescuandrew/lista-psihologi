@@ -56,21 +56,21 @@ function App() {
     useEffect(() => {
         fetchSpecialties();
         fetchFiliale();
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+        // window.addEventListener("scroll", handleScroll);
+        // return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     useEffect(() => {
         fetchPsychologists(true);
     }, [searchTerm, selectedSpecialties, selectedFiliale, dgpc, tsa, expert]);
 
-    const handleScroll = () => {
-        if (window.pageYOffset > 300) {
-            setShowBackToTop(true);
-        } else {
-            setShowBackToTop(false);
-        }
-    };
+    // const handleScroll = () => {
+    //     if (window.pageYOffset > 300) {
+    //         setShowBackToTop(true);
+    //     } else {
+    //         setShowBackToTop(false);
+    //     }
+    // };
 
     const scrollToTop = () => {
         window.scrollTo({
