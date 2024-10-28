@@ -363,12 +363,24 @@ function App() {
                                 <b>{psychologists.length} rezultate gasite</b>
                             </p>
                         ) : (
+                            <div style={{ marginTop: '2rem' }}>
                             <p style={{ textAlign: "center" }}>
-                                <b>
-                                    Nu exista rezultate pentru cautarea
-                                    dumneavoastra
-                                </b>
+                                    Toate datele sunt procesate pe baza registrelor
+                                    disponibile de la{" "}
+                                    <b>Colegiul Psihologilor din România.</b>
+                                    <br /> Când operați o căutare care nu
+                                    returnează niciun rezultat sau nu
+                                    rezultatul așteptat încercați din nou.
+                                </p>
+                            <p style={{ textAlign: "center", marginTop: '1rem' }}>
+                                <b>Important de știut</b>
                             </p>
+                            <ul style={{ textAlign: "left", maxWidth: "800px", margin: "0 auto", paddingLeft: "20px", listStyle: 'disc' }}>
+                                <li>în general numele persoanelor din registre sunt numele din buletin așadar ar fi indicat să căutați o persoană după numele complet dacă îl cunoașteți (Exemplu: "Popa Anca-Ioana" în loc de "Popa Anca" sau "Popa Ioana")</li>
+                                <li>este posibil ca unele persoane să își fi schimbat numele de familie între momentul obținerii atestatului și ultima actualizare a registrului, de aceea există posibilitatea ca dacă nu găsiți nici un rezultat, persoana să existe în baza de date însă cu un alt nume.</li>
+                                <li>folosiți filtrele de Filiala și bifele suplimentare pentru o căutare mai structurată care v-ar putea returna rezultate mai bune.</li>
+                                </ul>
+                            </div>
                         )
                     }
                 >
