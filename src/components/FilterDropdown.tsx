@@ -1,21 +1,4 @@
 import * as React from "react";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 
 interface FilterDropdownProps {
     options: string[];
@@ -31,40 +14,24 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
     placeholder,
 }) => {
     const [open, setOpen] = React.useState(false);
+    const [searchTerm, setSearchTerm] = React.useState("");
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleSelect = (option: string) => {
-        // This line normalizes the option string:
-        // 1. Convert to lowercase
-        // 2. Normalize Unicode characters (NFD: Normalization Form Decomposition)
-        // 3. Remove diacritical marks (accents)
-        // This ensures consistent comparison regardless of case or accents
         const normalizedOption = option;
-        // .toLowerCase()
-        // .normalize("NFD")
-        // .replace(/[\u0300-\u036f]/g, "")
-        // .replace(
-        //     /[\u0102\u0103\u00C2\u00E2\u00CE\u00EE\u0218\u0219\u015E\u015F\u021A\u021B]/g,
-        //     (match) => {
-        //         const replacements = {
-        //             "\u0102": "A",
-        //             "\u0103": "a",
-        //             "\u00C2": "A",
-        //             "\u00E2": "a",
-        //             "\u00CE": "I",
-        //             "\u00EE": "i",
-        //             "\u0218": "S",
-        //             "\u0219": "s",
-        //             "\u015E": "S",
-        //             "\u015F": "s",
-        //             "\u021A": "T",
-        //             "\u021B": "t",
-        //         };
-        //         return (
-        //             replacements[match as keyof typeof replacements] ||
-        //             match
-        //         );
-        //     }
-        // );
 
         if (selectedOptions.includes(normalizedOption)) {
             onOptionsChange(
@@ -75,51 +42,83 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         }
     };
 
+    const filteredOptions = options.filter(option =>
+        option.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild autoFocus={false}>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full sm:w-[400px] justify-between"
-                >
+        <div className="relative font-sans text-sm" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => setOpen(!open)}
+                className="w-full sm:w-[400px] px-4 py-2 text-leftborder rounded-md flex justify-between items-center bg-white"
+                role="combobox"
+                aria-expanded={open}
+            >
+                <span>
                     {selectedOptions.length > 0
-                        ? `${selectedOptions.length} selectii`
+                        ? selectedOptions.length === 1 
+                            ? "O selectie"
+                            : `${selectedOptions.length} selectii`
                         : placeholder}
-                    <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            {/* <PopoverContent className="w-full sm:w-[400px] p-0"> */}
-            <PopoverContent className="w-[--radix-popover-trigger-width] sm:w-[400px] p-0">
-                <Command>
-                    <CommandInput placeholder="Cauta..." className="h-9" />
-                    <CommandList>
-                        <CommandEmpty>Niciun rezultat gasit.</CommandEmpty>
-                        <CommandGroup>
-                            {options.map((option) => (
-                                <CommandItem
-                                    key={option}
-                                    onSelect={() => handleSelect(option)}
-                                >
-                                    <div className="flex items-center">
-                                        <CheckIcon
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                selectedOptions.includes(option)
-                                                    ? "opacity-100"
-                                                    : "opacity-0"
-                                            )}
-                                        />
+                </span>
+                <span className="ml-2 opacity-50">▼</span>
+            </button>
+
+            {open && (
+                <div className="absolute z-10 w-full sm:w-[400px] mt-1 bg-white border rounded-md shadow-lg">
+                    <div className="p-2 border-b bg-white relative">
+                        <svg 
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                            xmlns="http://www.w3.org/2000/svg" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                        >
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                            />
+                        </svg>
+                        <input
+                            type="text"
+                            className="w-full pl-10 pr-2 py-1 bg-white font-sans outline-none"
+                            placeholder="Cauta..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                    <div className="p-1 bg-white">
+                        {filteredOptions.length === 0 ? (
+                            <div className="px-2 py-1 text-gray-500 bg-white font-sans">
+                                Niciun rezultat gasit.
+                            </div>
+                        ) : (
+                            <div className="max-h-60 overflow-auto bg-white">
+                                {filteredOptions.map((option) => (
+                                    <button
+                                        key={option}
+                                        className="w-full px-2 py-1 text-left hover:bg-gray-100 flex items-center bg-white font-sans"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelect(option);
+                                        }}
+                                    >
+                                        <span className="mr-2 w-4 h-4 inline-flex items-center justify-center">
+                                            {selectedOptions.includes(option) && "✓"}
+                                        </span>
                                         {option}
-                                    </div>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
