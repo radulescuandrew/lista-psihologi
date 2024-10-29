@@ -77,7 +77,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild autoFocus={false}>
                 <Button
                     variant="outline"
                     role="combobox"
